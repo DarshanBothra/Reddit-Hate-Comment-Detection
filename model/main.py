@@ -144,6 +144,7 @@ def modelDefinition():
     print("Original class distribution:")
     print(df['class'].value_counts())
 
+
     # Step 1: Separate the majority and minority classes
     # Separate each class
     df_hate = df[df['class'] == 0]
@@ -154,9 +155,9 @@ def modelDefinition():
     max_class_size = max(len(df_hate), len(df_offensive), len(df_neither))
     sample_size = sum([len(df_hate), len(df_offensive), len(df_neither)]) - max_class_size
     # Upsample all to max_class_size
-    df_hate_balanced = resample(df_hate, replace=True, n_samples=max(len(df_hate), 2*sample_size), random_state=57)
-    df_offensive_balanced = resample(df_offensive, replace=True, n_samples=max(len(df_offensive), 2*sample_size), random_state=42)
-    df_neither_balanced = resample(df_neither, replace=True, n_samples=max(len(df_neither), 2*sample_size), random_state=96)
+    df_hate_balanced = resample(df_hate, replace=True, n_samples=max_class_size, random_state=57)
+    df_offensive_balanced = resample(df_offensive, replace=True, n_samples=max_class_size, random_state=42)
+    df_neither_balanced = resample(df_neither, replace=True, n_samples=max_class_size, random_state=96)
 
     # Combine all into one balanced DataFrame
     df_balanced = pd.concat([df_hate_balanced, df_offensive_balanced, df_neither_balanced])
