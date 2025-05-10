@@ -62,9 +62,6 @@ def fetchPost(url):
                 "link": link,
                 "tag": tag,
             }
-            if tag != "Neither":
-                print(tag)
-                print(content)
 
             all_comments.append(comment_stats)
             storeComments(comment.replies)
