@@ -27,6 +27,7 @@ def fetchPost(url):
     score = submission.score
     subreddit = submission.subreddit
     nsfw = submission.over_18
+    created = submission.created_utc
 
 
     # === Store all the comments in the post ===
@@ -72,7 +73,8 @@ def fetchPost(url):
         "score": score, 
         "subreddit": subreddit, 
         "comment_nest": all_comments,
-        "nsfw": nsfw
+        "nsfw": nsfw,
+        "created": created,
     }
 
     return result
