@@ -8,9 +8,7 @@ from nltk.tokenize import word_tokenize
 import nltk
 import numpy as np
 
-nltk.download("punkt")
-nltk.download("punkt_tab")
-nltk.download("stopwords")
+
 
 # Classes 
 
@@ -31,6 +29,9 @@ class MLPModel(nn.Module):
 # Functions
 
 def preprocess(text):
+    nltk.download("punkt", quiet = True)
+    nltk.download("punkt_tab", quiet = True)
+    nltk.download("stopwords", quiet = True)
     # Get stop words (common english words to be removed)
     stop_words = set(stopwords.words("english"))
 
@@ -41,6 +42,7 @@ def preprocess(text):
 
 def predict(text):
     processed = preprocess(text)
+    vectorizer, model, class_labels = main()
     features = vectorizer.transform([processed]).toarray()
     features_tensor = torch.tensor(features, dtype = torch.float32)
     
@@ -53,31 +55,23 @@ def predict(text):
 
 # Main
 def main():
+    
     # Load the vectorizer
     with open("vectorizer.pkl", "rb") as f:
-        global vectorizer
         vectorizer = pickle.load(f)
 
     input_size = vectorizer.max_features
-    global model
     model = MLPModel(input_size=input_size)
     model.load_state_dict(torch.load("mlp_tfidf_adam.pt"))
     model.eval()
 
-    global class_labels
     class_labels = {
         0: "Hate Speech",
         1: "Offensive",
         2: "Neither",
     }
-
-    sentence = input("Enter a sentence: ")
-    label = predict(sentence)
-    print(f"Predicted Class: {label}")
-
-    sentence = input("Enter another sentence: ")
-    label = predict(sentence)
-    print(f"Predicted Class: {label}")
+    
+    return vectorizer, model, class_labels
 
 if __name__ == "__main__":
     main()
