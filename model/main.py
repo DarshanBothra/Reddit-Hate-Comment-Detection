@@ -13,6 +13,7 @@ from sklearn.metrics import classification_report
 from sklearn.utils import resample
 from sklearn.utils.class_weight import compute_class_weight
 from torch.utils.data import TensorDataset, DataLoader
+import pickle
 
 nltk.download("punkt")
 nltk.download("punkt_tab")
@@ -24,14 +25,15 @@ class MLPModel(nn.Module):
     def __init__(self, input_size, hidden_size=256, num_classes=3):
         super(MLPModel, self).__init__()
         self.model = nn.Sequential(
-            nn.Linear(input_size, hidden_size),
+            nn.Linear(input_size, hidden_size),  # model.0
             nn.ReLU(),
             nn.Dropout(0.3),
-            nn.Linear(hidden_size, num_classes)
+            nn.Linear(hidden_size, num_classes)  # model.3
         )
 
     def forward(self, x):
         return self.model(x)
+
 
 
 # Functions
@@ -85,18 +87,23 @@ def modelDefinition():
 
     # Text to feature conversion (CountVectorizer)
 
-    vectorizer = TfidfVectorizer(max_features = 4000, sublinear_tf= True, stop_words = 'english', ngram_range=(1, 3))
+    vectorizer = TfidfVectorizer(max_features = 5000, sublinear_tf= True, stop_words = 'english', ngram_range=(1, 3))
     X = vectorizer.fit_transform(processed_texts).toarray()
+    
+    # Store the vectorizer
+    with open("vectorizer.pkl", "wb") as f:
+        pickle.dump(vectorizer, f)
+
     y = labels.values
 
     # Split training and testing data
     global X_train, X_test, y_train, y_test
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=51) # nice
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=69) 
 
     input_size = X_train.shape[1]
     num_classes = len(set(y))
     global model
-    model = MLPModel(input_size, num_classes)
+    model = MLPModel(input_size = X_train.shape[1], hidden_size = 256, num_classes = 3)
 
     # Create Dataloader
 
@@ -105,7 +112,7 @@ def modelDefinition():
 
     train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
     global train_loader
-    train_loader = DataLoader(train_dataset, batch_size = 128, shuffle = True)
+    train_loader = DataLoader(train_dataset, batch_size = 64, shuffle = True)
 
 def trainingLoop():
     
@@ -114,7 +121,7 @@ def trainingLoop():
     class_weights_tensor = torch.tensor(class_weights, dtype = torch.float)
 
     criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
-    optimizer = torch.optim.Adam(model.parameters(), lr = 0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr = 0.0001)
 
     epochs = 12
 
@@ -148,6 +155,7 @@ def evaluation():
 
 
 if __name__ == "__main__":
+    exit() # Remove before re-training the model, otherwise the program will exit!
     modelDefinition()
     trainingLoop()
     evaluation()
