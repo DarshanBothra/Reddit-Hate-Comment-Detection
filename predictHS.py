@@ -19,11 +19,14 @@ class MLPModel(nn.Module):
     def __init__(self, input_size, hidden_size=256, num_classes=3):
         super(MLPModel, self).__init__()
         self.model = nn.Sequential(
-            nn.Linear(input_size, hidden_size),  # model.0
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(hidden_size, num_classes)  # model.3
-        )
+        nn.Linear(input_size, hidden_size),
+        nn.ReLU(),
+        nn.Dropout(0.4),
+        nn.Linear(hidden_size, hidden_size // 2),
+        nn.ReLU(),
+        nn.Dropout(0.3),
+        nn.Linear(hidden_size // 2, num_classes)
+    )
 
     def forward(self, x):
         return self.model(x)

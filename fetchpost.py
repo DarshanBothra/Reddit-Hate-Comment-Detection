@@ -1,6 +1,7 @@
 import praw
 from dotenv import load_dotenv
 import os
+import predictHS
 
 load_dotenv()
 
@@ -28,6 +29,7 @@ def fetchPost(url):
     subreddit = submission.subreddit
     nsfw = submission.over_18
     created = submission.created_utc
+    tag = predictHS.predict(body)
 
 
     # === Store all the comments in the post ===
@@ -48,6 +50,7 @@ def fetchPost(url):
             created = comm["created"]
             parent = comm["parent_id"]
             id = comm["id"]
+            tag = predictHS.predict(content)
             link = f"https://www.reddit.com/r/ipad/comments/{post_id}/comment/{id}/"
 
             comment_stats = {
@@ -56,8 +59,12 @@ def fetchPost(url):
                 "created": created,
                 "parent": parent,
                 "id": id,
-                "link": link
+                "link": link,
+                "tag": tag,
             }
+            if tag != "Neither":
+                print(tag)
+                print(content)
 
             all_comments.append(comment_stats)
             storeComments(comment.replies)
@@ -75,10 +82,12 @@ def fetchPost(url):
         "comment_nest": all_comments,
         "nsfw": nsfw,
         "created": created,
+        "tag": tag,
     }
 
     return result
 
 if __name__ == "__main__":
-    post = fetchPost() # All the post details
+    post = fetchPost("https://www.reddit.com/r/AskReddit/comments/1kj29a2/whats_this_subreddits_obsession_with_sex/") # All the post details
+    print(post)
     
