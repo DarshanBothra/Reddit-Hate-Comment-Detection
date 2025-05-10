@@ -3,12 +3,15 @@
 import torch
 import torch.nn as nn
 import pickle
+import os
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import nltk
 import numpy as np
 
-
+nltk.download("punkt", quiet = True)
+nltk.download("punkt_tab", quiet = True)
+nltk.download("stopwords", quiet = True)
 
 # Classes 
 
@@ -29,9 +32,7 @@ class MLPModel(nn.Module):
 # Functions
 
 def preprocess(text):
-    nltk.download("punkt", quiet = True)
-    nltk.download("punkt_tab", quiet = True)
-    nltk.download("stopwords", quiet = True)
+
     # Get stop words (common english words to be removed)
     stop_words = set(stopwords.words("english"))
 
@@ -41,37 +42,38 @@ def preprocess(text):
     return " ".join(tokens)
 
 def predict(text):
+    loadResources()
     processed = preprocess(text)
-    vectorizer, model, class_labels = main()
-    features = vectorizer.transform([processed]).toarray()
+    features = _vectorizer.transform([processed]).toarray()
     features_tensor = torch.tensor(features, dtype = torch.float32)
     
     with torch.no_grad():
-        outputs = model(features_tensor)
+        outputs = _model(features_tensor)
 
         _, predicted = torch.max(outputs, 1) # Prediction
 
-        return class_labels[predicted.item()]
+        return _class_labels[predicted.item()]
 
-# Main
-def main():
-    
-    # Load the vectorizer
-    with open("vectorizer.pkl", "rb") as f:
-        vectorizer = pickle.load(f)
+# Caching Setup
 
-    input_size = vectorizer.max_features
-    model = MLPModel(input_size=input_size)
-    model.load_state_dict(torch.load("mlp_tfidf_adam.pt"))
-    model.eval()
+_vectorizer = None
+_model = None
+_class_labels = {
+    0: "Hate Speech",
+    1: "Offensive",
+    2: "Neither",
+}
 
-    class_labels = {
-        0: "Hate Speech",
-        1: "Offensive",
-        2: "Neither",
-    }
-    
-    return vectorizer, model, class_labels
+# Load once
 
-if __name__ == "__main__":
-    main()
+def loadResources():
+    global _vectorizer, _model
+    if _vectorizer is None or _model is None:
+        # Load the vectorizer
+        with open("vectorizer.pkl", "rb") as f:
+            _vectorizer = pickle.load(f)
+        input_size = _vectorizer.max_features
+        _model = MLPModel(input_size=input_size)
+        _model.load_state_dict(torch.load("mlp_tfidf_adam.pt"))
+        _model.eval()
+
