@@ -2,17 +2,21 @@ import praw
 from dotenv import load_dotenv
 import os
 import predictHS
-
 load_dotenv()
 
 # Initialize Reddit instance
-reddit = praw.Reddit(
-    client_id= os.getenv("CLIENT_ID"), # Different for every client! Ask user to enter thier id
-    client_secret=os.getenv("CLIENT_SECRET"), # Different for every client! Ask user to enter thier id
-    user_agent=os.getenv("USER_AGENT")
-)
 
-def fetchPost(url):
+def authorizeUser( CLIENT_ID = '<YOUR-CLIENT-ID>', CLIENT_SECRET  ='<YOUR-CLIENT-SECRET>', USER_AGENT = 'HateCommentIdentifer/0.1 by u/MrAwesome_YT'):
+    global reddit
+    reddit = praw.Reddit(
+    client_id= CLIENT_ID, # Different for every client! Ask user to enter thier id
+    client_secret=CLIENT_SECRET, # Different for every client! Ask user to enter thier id
+    user_agent=USER_AGENT
+    )   
+
+
+def fetchPost(url = "<POST-URL>"):
+
     # Input URL
     # url = "https://www.reddit.com/r/ipad/comments/1kj3p1n/ipad_mini_any_good/" # It will remain the only input in the program!
 
@@ -85,6 +89,6 @@ def fetchPost(url):
     return result
 
 if __name__ == "__main__":
-    post = fetchPost("https://www.reddit.com/r/AskReddit/comments/1kj29a2/whats_this_subreddits_obsession_with_sex/") # All the post details
+    post = fetchPost() # All the post details
     print(post)
     
